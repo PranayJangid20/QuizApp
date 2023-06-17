@@ -23,9 +23,6 @@ Future<void> main() async {
   runApp(MultiBlocProvider(providers: [
     BlocProvider(
       create: (BuildContext context) => HomeCubit(),
-    ),
-    BlocProvider(
-      create: (BuildContext context) => TestCubit(),
     )
   ], child: const MyApp()));
 }

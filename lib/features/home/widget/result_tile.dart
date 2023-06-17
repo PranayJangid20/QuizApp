@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:prepaud/features/home/model/users.dart';
+import 'package:prepaud/features/home/model/result.dart';
 import 'package:prepaud/utils/app_colors.dart';
-import 'package:prepaud/utils/healper.dart';
+import 'package:prepaud/utils/helper.dart';
 import 'package:prepaud/utils/ui_helper.dart';
 
 class ResultTile extends StatelessWidget {
   final Result result;
 
-  const ResultTile({required this.result});
+  const ResultTile({super.key, required this.result});
 
   @override
   Widget build(BuildContext context) {

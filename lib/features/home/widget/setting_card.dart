@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prepaud/utils/app_colors.dart';
-import 'package:prepaud/utils/healper.dart';
+import 'package:prepaud/utils/helper.dart';
 import 'package:prepaud/utils/ui_helper.dart';
 
 class SettingCard extends StatelessWidget {
@@ -15,7 +15,7 @@ class SettingCard extends StatelessWidget {
       children: [
         Container(padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.orange,
+            color: AppColors.primaryColor,
             borderRadius: BorderRadius.circular(5),
           ),
           child: Column(

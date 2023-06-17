@@ -5,13 +5,10 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
 import 'package:prepaud/database/databese_service.dart';
-import 'package:prepaud/features/home/model/users.dart';
 import 'package:prepaud/features/test/data/test_repository.dart';
 import 'package:prepaud/features/test/model/question.dart';
 import 'package:prepaud/main.dart';
-import 'package:prepaud/utils/healper.dart';
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
-
+import 'package:prepaud/utils/helper.dart';
 part 'test_state.dart';
 
 class TestCubit extends Cubit<TestState> {
@@ -19,7 +16,6 @@ class TestCubit extends Cubit<TestState> {
   final DatabaseService databaseService = locator<DatabaseService>();
   TestRepository? repository;
 
-  CountDownController? counter;
 
   List<Question> _questions = [];
 
@@ -33,6 +29,8 @@ class TestCubit extends Cubit<TestState> {
 
   double actionTime = 0;
 
+  int currentTime = 0;
+
   Alignment scorePosition = Alignment.centerRight;
   double scoreOpacity = 1;
 
@@ -41,11 +39,11 @@ class TestCubit extends Cubit<TestState> {
     scoreOpacity = 0.0;
   }
 
-  resetScoreAnimation({DataUpdatedState? state}) {
+  resetScoreAnimation({TestQuestionUpdatedState? state}) {
     scorePosition = Alignment.centerRight;
     scoreOpacity = 1;
-    if(state != null){
-      DataUpdatedState stat = state;
+    if (state != null) {
+      TestQuestionUpdatedState stat = state;
       stat.scoreOpacity = 1;
       stat.scorePosition = Alignment.centerRight;
       'reset'.log();
@@ -59,9 +57,8 @@ class TestCubit extends Cubit<TestState> {
     question.answer = ans!;
     scoreTracker(question.correctAnswer == question.answer);
     setScoreAnimation();
-    counter!.getTime().log();
-    //actionTime += int.parse(counter!.getTime()??'0');
-    emit(DataUpdatedState(
+    actionTime += currentTime;
+    emit(TestQuestionUpdatedState(
         question: question,
         current: currentQuestion,
         selected: index,
@@ -71,59 +68,66 @@ class TestCubit extends Cubit<TestState> {
         score: score.toString()));
   }
 
-  scoreTracker(bool result){
-    !result?score-=wrongPoint:score+= correctPoint;
+  scoreTracker(bool result) {
+    !result ? score -= wrongPoint : score += correctPoint;
   }
 
-  void onDataReceived(String newData) {
+  void onQuestionReceived(String newData) {
     resetScoreAnimation();
-    if(_questions.isNotEmpty && _questions.last.answer == '' ){
-      //score -= missPoint;
-    }
-    counter!.restart(duration: 5);
     Question question = Question.fromJson(jsonDecode(newData));
     currentQuestion++;
     _questions.add(question);
     question.correctAnswer.log();
 
-    emit(DataUpdatedState(
+    "from on data".log();
+
+    emit(TestQuestionUpdatedState(
         question: question,
         current: currentQuestion,
         scoreOpacity: scoreOpacity,
         scorePosition: scorePosition,
         score: score.toString()));
-    if(totalQuestions <= currentQuestion){
+    if (totalQuestions <= currentQuestion) {
       lastQuestion();
     }
   }
 
-  lastQuestion(){
+  lastQuestion() {
     Future.delayed(const Duration(seconds: 5)).then((value) {
-      int attemps = _questions.where((element) => element.answer !="").toList().length;
+      int attemps = _questions.where((element) => element.answer != "").toList().length;
       int correct = _questions.where((element) => element.answer == element.correctAnswer).toList().length;
-      if(_questions.last.answer == '' ){
+      if (_questions.last.answer == '') {
         //score -= 5;
       }
-      double percent = (score/(totalQuestions*correctPoint))*100;
-      double actTime = actionTime/totalQuestions;
+      double percent = (score / (totalQuestions * correctPoint)) * 100;
+      double actTime = actionTime / totalQuestions;
       'result'.log();
       percent.log();
       databaseService.insertScore(score.toString(), actTime.toString());
-      emit(QuizOver(_questions, score,attemps,correct,percent,actTime));
-      return ;
+      emit(QuizOver(_questions, score, attemps, correct, percent, actTime));
     });
   }
 
-
-  fetchQuestions({required int totalTQuestions, required int correctTPoint, required int wrongTPoint,required CountDownController controller}){
+  fetchQuestions(
+      {required int totalTQuestions,
+      required int correctTPoint,
+      required int wrongTPoint,}) {
     totalQuestions = totalTQuestions;
     correctPoint = correctTPoint;
     wrongPoint = wrongTPoint;
-    counter = controller;
     _questions = [];
     score = 0;
     actionTime = 0;
     repository = TestRepository();
-    repository!.fetchQuestions(totalQuestions, onDataReceived);
+    repository!.fetchQuestions(totalQuestions, onQuestionReceived);
   }
+
+  closeStream(){
+    repository!= null?repository!.closeStream():null;
+  }
+
+  updateTime(int sec){
+    currentTime = sec;
+  }
+
 }

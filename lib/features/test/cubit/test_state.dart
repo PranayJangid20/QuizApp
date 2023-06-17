@@ -7,7 +7,7 @@ class TestInitial extends TestState {
   @override
   List<Object> get props => [];
 }
-class DataUpdatedState extends TestState {
+class TestQuestionUpdatedState extends TestState {
   Question question;
   final int selected;
 
@@ -16,7 +16,7 @@ class DataUpdatedState extends TestState {
   Alignment scorePosition;
   double scoreOpacity;
   int current;
-  DataUpdatedState(
+  TestQuestionUpdatedState(
       {required this.question,
         required this.current,
       this.selected = -1,

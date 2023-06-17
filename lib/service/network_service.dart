@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:prepaud/utils/app_constant.dart';
 import 'package:eventsource/eventsource.dart';
-import 'package:sse_channel/sse_channel.dart';
-
+import 'package:prepaud/utils/helper.dart';
 
 class NetworkService {
-
-  late SseChannel _channel ;
+  var client = http.Client();
+  late EventSource _eventSource;
   static Future<Map<String, dynamic>> get(String page) async {
     String url = AppConstant.url + page;
     try {
@@ -19,19 +19,40 @@ class NetworkService {
     }
   }
 
-  eventSource(String param,void Function(String) onDataReceived)async{
-    EventSource eventSource = await EventSource.connect(AppConstant.url+param);
-    eventSource.listen((Event event) {
-      var data = event.data.toString()??'';
-      onDataReceived(data);
-    });
+  eventSource(String param, void Function(String) onDataReceived) async {
+    try {
+      _eventSource = await EventSource.connect(AppConstant.url + param);
 
+      _eventSource.listen((Event event) {
+        var data = event.data.toString() ?? '';
+        onDataReceived(data);
+      });
+
+      _eventSource.onError.listen((error) {
+        // Handle SSE connection closure
+        'SSE connection closed: $error'.log();
+        // Perform additional actions like reconnection or error display
+      });
+    }
+    catch(e){
+      "Network Error".log();
+    }
   }
 
-  startSse(){
-    _channel = SseChannel.connect(Uri.parse('http://127.0.0.1:8080/sseHandler'));
-  }
+  closeStream() {
+    if (_eventSource != null) {
+      try{
+        _eventSource.client.close();
+      }on SocketException catch(e){
+        'No internet connection'.log();
+      }on HttpException catch(e){
+        "Client disconnected".log();
+      }catch(e){
+        "Other Problem".log();
+      }
 
+    }
+  }
 
   static dynamic _fetchResponse(http.Response response) {
     var responseJson;

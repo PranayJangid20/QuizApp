@@ -3,7 +3,7 @@ import 'package:prepaud/common/app_button.dart';
 import 'package:prepaud/features/home/cubit/home_cubit.dart';
 import 'package:prepaud/features/test/cubit/test_cubit.dart';
 import 'package:prepaud/utils/app_colors.dart';
-import 'package:prepaud/utils/healper.dart';
+import 'package:prepaud/utils/helper.dart';
 import 'package:prepaud/utils/ui_helper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,12 +69,10 @@ class ResultWall extends StatelessWidget {
           ),
           const Spacer(),
 
-          GestureDetector(
-              onTap: (){
-                context.read<HomeCubit>().fetchPreviousResults();
-                Navigator.pop(context);
-              },
-              child: const AppButton(text: 'OKAY', isEnabled: true,isGradient: false,))
+          AppButton(text: 'OKAY', isEnabled: true,isGradient: false,onTap: (){
+          context.read<HomeCubit>().fetchPreviousResults();
+              Navigator.pop(context);
+          },)
         ],
       ),
     );

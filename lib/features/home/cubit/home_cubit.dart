@@ -3,13 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:prepaud/database/databese_service.dart';
 import 'package:prepaud/features/home/data/home_repository.dart';
-import 'package:prepaud/features/home/model/users.dart';
+import 'package:prepaud/features/home/model/result.dart';
 import 'package:prepaud/main.dart';
-import 'package:prepaud/service/network_service.dart';
-import 'package:prepaud/service/sse_network_service.dart';
-import 'package:prepaud/utils/app_constant.dart';
-import 'package:prepaud/utils/healper.dart';
-
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -74,7 +69,7 @@ class HomeCubit extends Cubit<HomeState> {
   fetchPreviousResults() async {
     var result = await databaseService.getScores();
     if (result.isNotEmpty) {
-      results = result.map((e) => Result.fromMap(e)).toList();
+      results = result.reversed.map((e) => Result.fromMap(e)).toList();
     }
     else{
       results = [];
