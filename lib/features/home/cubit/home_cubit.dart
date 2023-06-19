@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 import 'package:prepaud/database/databese_service.dart';
 import 'package:prepaud/features/home/data/home_repository.dart';
 import 'package:prepaud/features/home/model/result.dart';
@@ -9,6 +8,12 @@ part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(HomeInitial());
+
+  // Get Database instance from locator
+  DatabaseService databaseService = locator<DatabaseService>();
+  HomeRepository repository = HomeRepository();
+
+  // array to store previous results
   List<Result> results = [];
 
   int numberOfQues = 10;
@@ -19,12 +24,14 @@ class HomeCubit extends Cubit<HomeState> {
 
   String level = 'Easy';
 
+  // this is map that has value as [PointsOnCorrectAnswer, PointsToDeductWrongAnswer] acc to selected level
   Map<String, List> pointMap = {
     "Easy": [5, 0],
     "Mid": [5, 2],
     'Pro': [5, 5]
   };
 
+  // responsible for selecting total numbers of question
   questionUp() {
     if (numberOfQues == 30) {
       numberOfQues = 10;
@@ -43,6 +50,7 @@ class HomeCubit extends Cubit<HomeState> {
     emit(HomePageLoaded(results, lvlList[lvlSeleted], numberOfQues, pointMap[level]!));
   }
 
+  // responsible for selecting total level of game
   levelUp() {
 
       lvlSeleted += 1;
@@ -63,9 +71,8 @@ class HomeCubit extends Cubit<HomeState> {
     emit(HomePageLoaded(results, lvlList[lvlSeleted], numberOfQues, pointMap[level]!));
   }
 
-  DatabaseService databaseService = locator<DatabaseService>();
-
-  HomeRepository repository = HomeRepository();
+  // responsible for collecting previous results
+  // and store them in results array in Result Model form
   fetchPreviousResults() async {
     var result = await databaseService.getScores();
     if (result.isNotEmpty) {

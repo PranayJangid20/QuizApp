@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:prepaud/features/test/widget/result_wall.dart';
+import 'package:prepaud/common/app_button.dart';
+import 'package:prepaud/features/test/widget/explanation_box.dart';
+import 'package:prepaud/features/test/widget/score_board.dart';
 import 'package:prepaud/features/test/cubit/test_cubit.dart';
 import 'package:prepaud/features/test/widget/option_tile.dart';
 import 'package:prepaud/utils/app_colors.dart';
 import 'package:prepaud/utils/helper.dart';
 import 'package:prepaud/utils/ui_helper.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
-import 'package:circular_countdown/circular_countdown.dart';
+import 'package:lottie/lottie.dart';
+import 'package:flip_card/flip_card.dart';
+import 'package:flip_card/flip_card_controller.dart';
+
 
 class TestPage extends StatefulWidget {
   const TestPage({Key? key, required this.totalQuestion, required this.correctPoint, required this.wrongPoint})
@@ -22,12 +27,15 @@ class TestPage extends StatefulWidget {
 
 class _TestPageState extends State<TestPage> {
 
+  final FlipCardController _controller = FlipCardController();
   @override
   void initState() {
     context.read<TestCubit>().fetchQuestions(
         totalTQuestions: widget.totalQuestion,
         correctTPoint: widget.correctPoint,
-        wrongTPoint: widget.wrongPoint);
+        wrongTPoint: widget.wrongPoint,
+        controller: _controller
+    );
     super.initState();
   }
 
@@ -120,12 +128,12 @@ class _TestPageState extends State<TestPage> {
                               20.spaceY,
                               StepProgressIndicator(
                                 totalSteps: widget.totalQuestion,
-                                currentStep: state.current,
+                                currentStep: state.current+1,
                                 selectedColor: AppColors.backgroundColor,
                                 unselectedColor: Colors.grey,
                                 customStep: (index, color, size) => Container(
                                   decoration: BoxDecoration(
-                                    color: (state.current - 1) != index ? color : Colors.green,
+                                    color: (state.current) != index ? color : Colors.green,
                                   ),
                                 ),
                               ),
@@ -133,52 +141,59 @@ class _TestPageState extends State<TestPage> {
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                        child: Text.rich(TextSpan(children: [
-                          TextSpan(
-                              text: "Q.",
-                              style: fsHeadLine3(color: Colors.black.withOpacity(0.4), fontWeight: FontWeight.w500)),
-                          TextSpan(
-                              text: state.question.question ?? "",
-                              style: fsHeadLine3(color: Colors.black.withOpacity(0.7), fontWeight: FontWeight.w600)),
-                        ])),
+                      SizedBox(height: MediaQuery.of(context).size.height*0.1,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                          child: Text.rich(TextSpan(children: [
+                            TextSpan(
+                                text: "Q.",
+                                style: fsHeadLine3(color: Colors.black.withOpacity(0.4), fontWeight: FontWeight.w500)),
+                            TextSpan(
+                                text: state.question.question ?? "",
+                                style: fsHeadLine3(color: Colors.black.withOpacity(0.7), fontWeight: FontWeight.w600)),
+                          ])),
+                        ),
                       ),
 
-                      ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: state.question.options?.length ?? 0,
-                          itemBuilder: (_, index) {
-                            return InkWell(
-                              onTap: () {
-                                state.selected == -1 ? context.read<TestCubit>().onAnswer(index) : null;
-                              },
-                              child: OptionTile(
-                                  result: state.question.answer == state.question.correctAnswer,
-                                  index: index,
-                                  text: state.question.options![index],
-                                  isSelected: index == state.selected),
-                            );
-                          }),
+                      FlipCard(
+                        controller: _controller,
+                        front: AbsorbPointer(
+                          absorbing: state.selected != -1,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: state.question.options?.length ?? 0,
+                              itemBuilder: (_, index) {
+                                return InkWell(
+                                  onTap: () {
+                                    state.selected == -1 ? context.read<TestCubit>().onAnswer(index) : null;
+                                  },
+                                  child: OptionTile(
+                                      result: state.question.answer == state.question.correctAnswer,
+                                      index: index,
+                                      text: state.question.options![index],
+                                      isSelected: index == state.selected),
+                                );
+                              }),
+                        ),
+                        back: ExplanationBoard(question: state.question),
+                      ),
 
                       const Spacer(),
-                      TimeCircularCountdown(
-                        unit: CountdownUnit.second,
-                        countdownTotal: 5,
-                        countdownRemainingColor: AppColors.primaryColor,
-                        countdownCurrentColor: Colors.white,
-                        repeat: true,
-                        onUpdated: (unit, remainingTime) => BlocProvider.of<TestCubit>(context).updateTime(5-remainingTime),
-                        // onFinished: () => print('Countdown finished'),
-                      ),
+                      state.question.answer != ''?
+                          LottieBuilder.network(
+                            height: 150,
+                              state.question.answer == state.question.correctAnswer?
+                                  "https://assets6.lottiefiles.com/packages/lf20_arr5mnb0.json":
+                                  "https://assets6.lottiefiles.com/packages/lf20_f5jb9b78.json"
+                          ):SizedBox.shrink(),
 
                       10.spaceY
                       //AppButton(text: 'Next', isEnabled: state.selected != -1)
                     ],
                   )
                 : state is QuizOver
-                    ? ResultWall(
+                    ? ScoreBoard(
                         state: state,
                       )
                     : Center(

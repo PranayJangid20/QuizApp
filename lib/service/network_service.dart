@@ -19,13 +19,20 @@ class NetworkService {
     }
   }
 
-  eventSource(String param, void Function(String) onDataReceived) async {
+  eventSource(String param, void Function(String) getData) async {
+
+    var list = [];
+
     try {
       _eventSource = await EventSource.connect(AppConstant.url + param);
 
       _eventSource.listen((Event event) {
-        var data = event.data.toString() ?? '';
-        onDataReceived(data);
+        //var data = jsonDecode(event.data.toString());
+        //data.toString().log();
+        getData(event.data.toString());
+        // list.add(data);
+        // list.length.log();
+        //onDataReceived(data);
       });
 
       _eventSource.onError.listen((error) {

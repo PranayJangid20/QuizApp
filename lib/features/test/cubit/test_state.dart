@@ -7,6 +7,11 @@ class TestInitial extends TestState {
   @override
   List<Object> get props => [];
 }
+
+class TestLoading extends TestState {
+  @override
+  List<Object> get props => [];
+}
 class TestQuestionUpdatedState extends TestState {
   Question question;
   final int selected;
@@ -44,3 +49,5 @@ class QuizOver extends TestState {
   // TODO: implement props
   List<Object?> get props => [question, finalScore, attemp];
 }
+
+

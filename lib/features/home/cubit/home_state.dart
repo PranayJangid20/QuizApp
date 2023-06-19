@@ -1,6 +1,5 @@
 part of 'home_cubit.dart';
 
-@immutable
 abstract class HomeState extends Equatable {}
 
 class HomeInitial extends HomeState {

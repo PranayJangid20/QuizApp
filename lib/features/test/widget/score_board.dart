@@ -8,9 +8,9 @@ import 'package:prepaud/utils/ui_helper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ResultWall extends StatelessWidget {
+class ScoreBoard extends StatelessWidget {
   final QuizOver state;
-  const ResultWall({Key? key, required this.state}) : super(key: key);
+  const ScoreBoard({Key? key, required this.state}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
